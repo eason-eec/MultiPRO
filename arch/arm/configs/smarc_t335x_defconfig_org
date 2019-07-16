@@ -4348,19 +4348,12 @@ CONFIG_VIRTIO_MMIO=y
 #
 # Microsoft Hyper-V guest support
 #
-CONFIG_STAGING=y
+# CONFIG_STAGING is not set
 # CONFIG_GOLDFISH is not set
 # CONFIG_CHROME_PLATFORMS is not set
 CONFIG_CLKDEV_LOOKUP=y
 CONFIG_HAVE_CLK_PREPARE=y
 CONFIG_COMMON_CLK=y
-
-#
-# Android
-#
-CONFIG_FB_TFT=y
-CONFIG_FB_TFT_RA8875=y
-CONFIG_FB_AM335X=y
 
 #
 # Common Clock Framework

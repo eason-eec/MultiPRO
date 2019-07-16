@@ -9,7 +9,8 @@
 
 #include "am33xx.dtsi"
 #include <dt-bindings/interrupt-controller/irq.h>
-#include "am335x-smarc-common.dtsi"
+//#include "am335x-smarc-common.dtsi"
+#include "am335x-smarc-multipro.dtsi"
 
 &ldo3_reg {
 	regulator-min-microvolt = <1800000>;

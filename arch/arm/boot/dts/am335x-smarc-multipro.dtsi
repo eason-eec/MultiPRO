@@ -1,0 +1,913 @@
+/*
+ * Copyright (C) 2012 Texas Instruments Incorporated - http://www.ti.com/
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation.
+ */
+
+        /* state the resources this carrier uses for audio function*/
+                /* the pin header uses for Audio*/
+                /*
+                "S.39",         mcasp1: mcasp0_fsr.mcasp1_fsx           mode3
+                "S.40",         mcasp1: mcasp0_axr1.mcasp1_axr0         mode3
+                "S.41",         mcasp1: mcasp0_ahclkx.mcasp1_axr1       mode3
+                "S.42",         mcasp1: mcasp0_aclkr.mcasp1_aclkx       mode3
+                */
+                /* the pin header uses for SPI1*/
+                /*
+                "P.54",         spi1: mcasp0_ahclkr.spi1_cs0n           mode3
+                "P.55",         spi1: xdma_event_intro0.spi1_cs1n       mode4
+                "P.56",         spi1: mcasp0_aclkx.spi1_sclk            mode3
+                "P.57",         spi1: mcasp0_fsx.spi1_d0                mode3
+                "P.58",         spi1: mcasp0_axr0.spi1_d1               mode3
+                */
+                /* the pin header uses for LCD*/
+                /*
+                "S.114",        lcd: lcd_data0.lcd_data0                mode0
+                "S.115",        lcd: lcd_data1.lcd_data1                mode0
+                "S.116",        lcd: lcd_data2.lcd_data2                mode0
+                "S.117",        lcd: lcd_data3.lcd_data3                mode0
+                "S.118",        lcd: lcd_data4.lcd_data4                mode0
+                "S.104",        lcd: lcd_data5.lcd_data5                mode0
+                "S.105",        lcd: lcd_data6.lcd_data6                mode0
+                "S.106",        lcd: lcd_data7.lcd_data7                mode0
+                "S.107",        lcd: lcd_data8.lcd_data8                mode0
+                "S.108",        lcd: lcd_data9.lcd_data9                mode0
+                "S.109",        lcd: lcd_data10.lcd_data10              mode0
+                "S.96",         lcd: lcd_data11.lcd_data11              mode0
+                "S.97",         lcd: lcd_data12.lcd_data12              mode0
+                "S.98",         lcd: lcd_data13.lcd_data13              mode0
+                "S.99",         lcd: lcd_data14.lcd_data14              mode0
+                "S.100",        lcd: lcd_data15.lcd_data15              mode0
+                "S.113",        lcd: lcd_data16.gpmc_ad15               mode0
+                "S.95",         lcd: lcd_data17.gpmc_ad14               mode0
+                "S.112",        lcd: lcd_data18.gpmc_ad13               mode0
+                "S.103",        lcd: lcd_data19.gpmc_ad12               mode0
+                "S.94",         lcd: lcd_data20.gpmc_ad11               mode0
+                "S.111",        lcd: lcd_data21.gpmc_ad10               mode0
+                "S.102",        lcd: lcd_data22.gpmc_ad9                mode0
+                "S.93",         lcd: lcd_data23.gpmc_ad8                mode0
+                "S.121",        lcd: lcd_vsync.lcd_vsync                mode0
+                "S.122",        lcd: lcd_hsync.lcd_hsync                mode0
+                "S.123",        lcd: lcd_pclk.lcd_pclk                  mode0
+                "S.120",        lcd_de: lcd_ac_bias_en.lcd_ac_bias_en   mode0
+                "S.133",        lcd_vdd_en: gpmc_a7.gpio1_23            mode7
+                "S.127",        lcd_bklt_en: gpmc_a6.gpio1_22           mode7
+        `       */
+                /* the pin header uses for DCAN0*/
+                /*
+                "P.143",        dcan0_tx: gmii1_txd3.dcan0_tx           mode1
+                "P.144",        dcan0_rx: gmii1_txd2.dcan0_rx   mode1
+                */
+                /* the hardware ip uses */
+                /*
+                "mcasp1",
+                "i2c0",
+                "i2c1",
+                "i2c2",
+                "uart0",
+                "uart2",
+                "uart3",
+                "touch",
+                "mmc0/SD",
+                "emmc",
+                "ecap0/backlight",
+                "emac0",
+                "emac1",
+                "gpio1_22",
+                "gpio1_23",
+                "gpio1_19",
+                "lcd",
+                "dcan0",
+                "spi0",
+                "spi1";
+                */
+
+
+/ {
+	model = "TI AM335x SMARCT335X";
+	compatible = "ti,am335x-smarct335x", "ti,am33xx";
+
+        aliases {
+                rtc0 = &s35390a;
+                rtc1 = &rtc;
+               	mmc0 = &mmc2;   /* Fixed to mmcblk0 for &mmc2 */
+               	mmc1 = &mmc1;   /* Fixed to mmcblk1 for &mmc1 */
+        };
+
+	cpus {
+		cpu@0 {
+			cpu0-supply = <&dcdc2_reg>;
+		};
+	};
+
+	memory@80000000 {
+		device_type = "memory";
+		reg = <0x80000000 0x20000000>; /* 512 MB */
+	};
+
+        vmmcsd_fixed: fixedregulator@0 {
+                compatible = "regulator-fixed";
+                regulator-name = "vmmcsd_fixed";
+                regulator-min-microvolt = <3300000>;
+                regulator-max-microvolt = <3300000>;
+        };
+
+        backlight {
+                compatible = "pwm-backlight";
+                enable-gpios = <&gpio1 22 0>; /* Backlight Enable Pin*/
+                pwms = <&ecap0 0 50000 0>;
+                brightness-levels = <0 51 53 56 62 75 101 152 255>;
+                default-brightness-level = <8>;
+        };
+
+//	lcdc: lcdc@4830e000 {
+//		compatible = "ti,am33xx-tilcdc";
+//		reg = <0x4830e000 0x1000>;
+//		interrupt-parent = <&intc>;
+//		interrupts = <36>;
+//		ti,hwmods = "lcdc";
+//		status = "enabled";
+//	};
+
+        panel {
+                compatible = "ti,fb_ra8875,panel";
+                status = "okay";
+        	pinctrl-names = "default";
+        	pinctrl-0 = <&lcd_pins_default>;
+//		enable-gpios = <&gpio1 23 0>; /* Enable LCD_VDD_EN pin */
+                panel-info {
+                        bpp               = <16>;
+                };
+
+                display-timings {
+                       	800x480p60 {
+                                hactive = <800>;
+                                vactive = <480>;
+                               hsync-active = <0>;
+                                vsync-active = <0>;
+                        };
+                };
+        };
+};
+
+
+&am33xx_pinmux {
+	pinctrl-names = "default";
+//	pinctrl-0 = <&clkout2_pin &gpio_pins_default>;
+	pinctrl-0 = <&gpio_pins_default>;
+  
+  i2c0_pins: pinmux_i2c0_pins {    //to ??
+    pinctrl-single,pins = <
+      AM33XX_IOPAD(0x988, PIN_INPUT_PULLUP | MUX_MODE0) /* (C17) I2C0_SDA.I2C0_SDA */
+      AM33XX_IOPAD(0x98c, PIN_INPUT_PULLUP | MUX_MODE0) /* (C16) I2C0_SCL.I2C0_SCL */
+    >;
+  };
+  /* Optional sleep pin settings. Must manually enter values in the below skeleton. */
+  i2c0_pins_sleep: i2c0_pins_sleep {
+    pinctrl-single,pins = <
+      AM33XX_IOPAD(0x988, PIN_INPUT_PULLDOWN | MUX_MODE7) /* (C17) I2C0_SDA.I2C0_SDA */
+      AM33XX_IOPAD(0x98c, PIN_INPUT_PULLDOWN | MUX_MODE7) /* (C16) I2C0_SCL.I2C0_SCL */
+    >;
+  };
+
+  i2c2_pins: pinmux_i2c2_pins {   //to touch
+    pinctrl-single,pins = <
+      AM33XX_IOPAD(0x978, PIN_INPUT_PULLUP | MUX_MODE3) /* (D18) uart1_ctsn.I2C2_SDA */
+      AM33XX_IOPAD(0x97c, PIN_INPUT_PULLUP | MUX_MODE3) /* (D17) uart1_rtsn.I2C2_SCL */
+      AM33XX_IOPAD(0x9a0, PIN_INPUT_PULLUP | MUX_MODE7) /* (B12) mcasp0_aclkr.gpio3[18] nINT_CTP*/
+    >;
+  };
+  /* Optional sleep pin settings. Must manually enter values in the below skeleton. */
+  i2c2_pins_sleep: i2c2_pins_sleep {
+    pinctrl-single,pins = <
+      AM33XX_IOPAD(0x978, PIN_INPUT_PULLDOWN | MUX_MODE7) /* (D18) uart1_ctsn.I2C2_SDA */
+      AM33XX_IOPAD(0x97c, PIN_INPUT_PULLDOWN | MUX_MODE7) /* (D17) uart1_rtsn.I2C2_SCL */
+      AM33XX_IOPAD(0x9a0, PIN_INPUT_PULLDOWN | MUX_MODE7) /* (B12) mcasp0_aclkr.gpio3[18] nINT_CTP*/
+    >;
+  };
+
+  uart0_pins: pinmux_uart0_pins {    //to PC
+    pinctrl-single,pins = <
+      AM33XX_IOPAD(0x970, PIN_INPUT_PULLUP | MUX_MODE0)	/* (E15) uart0_rxd.uart0_rxd */
+      AM33XX_IOPAD(0x974, PIN_OUTPUT_PULLDOWN | MUX_MODE0)	/* (E16) uart0_txd.uart0_txd */
+    >;
+  };
+  uart0_pins_sleep: pinmux_uart0_pins_sleep {
+    pinctrl-single,pins = <
+      AM33XX_IOPAD(0x970, PIN_INPUT_PULLDOWN | MUX_MODE7)	/* (E15) uart0_rxd.uart0_rxd */
+      AM33XX_IOPAD(0x974, PIN_INPUT_PULLDOWN | MUX_MODE7)	/* (E16) uart0_txd.uart0_txd */
+    >;
+  };
+
+  uart1_pins: pinmux_uart1_pins {    //to FPGA
+    pinctrl-single,pins = <
+      AM33XX_IOPAD(0x980, PIN_INPUT_PULLUP | MUX_MODE0) /* (D16) uart1_rxd.uart1_rxd */ 
+      AM33XX_IOPAD(0x984, PIN_OUTPUT_PULLDOWN | MUX_MODE0)	/* (D15) uart1_txd.uart1_txd */
+    >;
+  };
+  uart1_pins_sleep: pinmux_uart1_pins_sleep {
+    pinctrl-single,pins = <
+      AM33XX_IOPAD(0x980, PIN_INPUT_PULLDOWN | MUX_MODE7) /* (D16) uart1_rxd.uart1_rxd */
+      AM33XX_IOPAD(0x984, PIN_INPUT_PULLDOWN | MUX_MODE7) /* (D15) uart1_txd.uart1_txd */
+    >;
+  };
+
+  uart2_pins: pinmux_uart2_pins {   //to module
+    pinctrl-single,pins = <
+      AM33XX_IOPAD(0x92c, PIN_INPUT_PULLUP | MUX_MODE1) /* (K18) gmii1_txclk.uart2_rxd */
+      AM33XX_IOPAD(0x930, PIN_OUTPUT_PULLDOWN | MUX_MODE1) /* (L18) gmii1_rxclk.uart2_txd */
+    >;
+  };
+  uart2_pins_sleep: pinmux_uart2_pins_sleep {
+    pinctrl-single,pins = <
+      AM33XX_IOPAD(0x92c, PIN_INPUT_PULLDOWN | MUX_MODE7) /* (K18) gmii1_txclk.uart2_rxd */
+      AM33XX_IOPAD(0x930, PIN_INPUT_PULLDOWN | MUX_MODE7) /* (L18) gmii1_rxclk.uart2_txd */
+    >;
+  };
+ 
+  uart3_pins: pinmux_uart3_pins {   //debug
+    pinctrl-single,pins = <
+      AM33XX_IOPAD(0x934, PIN_INPUT_PULLUP | MUX_MODE1) /* (L17) gmii1_rxd3.uart3_rxd */
+      AM33XX_IOPAD(0x938, PIN_OUTPUT_PULLDOWN | MUX_MODE1) /* (L16) gmii1_rxd2.uart3_txd */
+    >;
+  };
+  uart3_pins_sleep: pinmux_uart3_pins_sleep {
+    pinctrl-single,pins = <
+      AM33XX_IOPAD(0x934, PIN_INPUT_PULLDOWN | MUX_MODE7) /* (L17) gmii1_rxd3.uart3_rxd */
+      AM33XX_IOPAD(0x938, PIN_INPUT_PULLDOWN | MUX_MODE7) /* (L16) gmii1_rxd2.uart3_txd */
+    >;
+  };
+
+//	clkout2_pin: pinmux_clkout2_pin {
+//		pinctrl-single,pins = <
+//			AM33XX_IOPAD(0x9b4, PIN_OUTPUT_PULLDOWN | MUX_MODE3)	/* xdma_event_intr1.clkout2 */
+//		>;
+//	};
+
+  gpio_pins_default: pinmux_gpio_pin {
+    pinctrl-single,pins = <
+      AM33XX_IOPAD(0x918, PIN_INPUT_PULLUP | MUX_MODE7) /* (J17) gmii1_rxdv.gpio3[4] FPGA_Interrupt_1_n*/
+      AM33XX_IOPAD(0x9e4, PIN_OUTPUT_PULLDOWN | MUX_MODE7) /* (C14) EMU0.gpio3[7] MCU_LED_G */
+      AM33XX_IOPAD(0x9e8, PIN_OUTPUT_PULLDOWN | MUX_MODE7) /* (B14) EMU1.gpio3[8] MCU_LED_R */
+      AM33XX_IOPAD(0x990, PIN_INPUT | MUX_MODE7) /* (A13) mcasp0_aclkx.gpio3[14] GPIO_JTAG_TCK */
+      AM33XX_IOPAD(0x994, PIN_INPUT | MUX_MODE7) /* (B13) mcasp0_fsx.gpio3[15] GPIO_JTAG_TDO */
+      AM33XX_IOPAD(0x998, PIN_INPUT | MUX_MODE7) /* (D12) mcasp0_axr0.gpio3[16] GPIO_JTAG_TDI */
+      AM33XX_IOPAD(0x99c, PIN_INPUT | MUX_MODE7) /* (C12) mcasp0_ahclkr.gpio3[17] GPIO_JTAG_TMS */
+      AM33XX_IOPAD(0x9a4, PIN_INPUT | MUX_MODE7) /* (C13) mcasp0_fsr.gpio3[19] External_Key_2 */
+      AM33XX_IOPAD(0x9a8, PIN_OUTPUT_PULLUP | MUX_MODE7) /* (D13) mcasp0_axr1.gpio3[20] Enable_Lamp_1 */
+      AM33XX_IOPAD(0x9ac, PIN_OUTPUT_PULLUP | MUX_MODE7) /* (A14) mcasp0_ahclkx.gpio3[21] Enable_Lamp_2 */
+      AM33XX_IOPAD(0x89c, PIN_INPUT_PULLUP | MUX_MODE7) /* (T6) gpmc_be0n_cle.gpio2[5] FPGA_Interrupt_2_n */
+      AM33XX_IOPAD(0x9b0, PIN_INPUT | MUX_MODE7) /* (A15) xdma_event_intr0.gpio0[19] GPIO_EXT_JTAG_ENn */
+      AM33XX_IOPAD(0x9b4, PIN_INPUT_PULLUP | MUX_MODE7) /* (D14) xdma_event_intr1.gpio0[20] External_Key_1 */
+    >;
+  };
+  /* Optional sleep pin settings. Must manually enter values in the below skeleton. */
+  gpio_pins_sleep: gpio_pins_sleep {
+    pinctrl-single,pins = <
+      AM33XX_IOPAD(0x918, PIN_OUTPUT_PULLDOWN | MUX_MODE7) /* (J17) gmii1_rxdv.gpio3[4] */
+      AM33XX_IOPAD(0x9e4, PIN_OUTPUT_PULLDOWN | MUX_MODE7) /* (C14) EMU0.gpio3[7] */
+      AM33XX_IOPAD(0x9e8, PIN_OUTPUT_PULLDOWN | MUX_MODE7) /* (B14) EMU1.gpio3[8] */
+      AM33XX_IOPAD(0x990, PIN_OUTPUT_PULLDOWN | MUX_MODE7) /* (A13) mcasp0_aclkx.gpio3[14] */
+      AM33XX_IOPAD(0x994, PIN_OUTPUT_PULLDOWN | MUX_MODE7) /* (B13) mcasp0_fsx.gpio3[15] */
+      AM33XX_IOPAD(0x998, PIN_OUTPUT_PULLDOWN | MUX_MODE7) /* (D12) mcasp0_axr0.gpio3[16] */
+      AM33XX_IOPAD(0x99c, PIN_OUTPUT_PULLDOWN | MUX_MODE7) /* (C12) mcasp0_ahclkr.gpio3[17] */
+      AM33XX_IOPAD(0x9a4, PIN_OUTPUT_PULLDOWN | MUX_MODE7 ) /* (C13) mcasp0_fsr.gpio3[19] */
+      AM33XX_IOPAD(0x9a8, PIN_OUTPUT_PULLDOWN | MUX_MODE7) /* (D13) mcasp0_axr1.gpio3[20] */
+      AM33XX_IOPAD(0x9ac, PIN_OUTPUT_PULLDOWN | MUX_MODE7) /* (A14) mcasp0_ahclkx.gpio3[21] */
+      AM33XX_IOPAD(0x89c, PIN_OUTPUT_PULLDOWN | MUX_MODE7) /* (T6) gpmc_be0n_cle.gpio2[5] */
+      AM33XX_IOPAD(0x9b0, PIN_OUTPUT_PULLDOWN | MUX_MODE7) /* (A15) xdma_event_intr0.gpio0[19] */
+      AM33XX_IOPAD(0x9b4, PIN_OUTPUT_PULLDOWN | MUX_MODE7) /* (D14) xdma_event_intr1.gpio0[20] */
+    >;
+  };
+
+  ecap0_pins: backlight_pins {    // PWM to BL
+    pinctrl-single,pins = <
+      AM33XX_IOPAD(0x964, MUX_MODE0)  /* (C18) eCAP0_in_PWM0_out.eCAP0_in_PWM0_out */
+    >;
+  };
+  /* Optional sleep pin settings. Must manually enter values in the below skeleton. */
+  ecap0_pins_sleep:  ecap0_pins_sleep {
+    pinctrl-single,pins = <
+      AM33XX_IOPAD(0x964, PIN_OUTPUT_PULLDOWN | MUX_MODE7) /* (C18) eCAP0_in_PWM0_out.eCAP0_in_PWM0_out */
+    >;
+  };
+
+  gpmc_to_fpga_pins_default: gpmc_to_fpga_pins_default {
+    pinctrl-single,pins = <
+      AM33XX_IOPAD(0x844, PIN_OUTPUT | MUX_MODE0) /* (V14) gpmc_a1.gpmc_a1 */
+      AM33XX_IOPAD(0x848, PIN_OUTPUT | MUX_MODE0) /* (U14) gpmc_a2.gpmc_a2 */
+      AM33XX_IOPAD(0x84c, PIN_OUTPUT | MUX_MODE0) /* (T14) gpmc_a3.gpmc_a3 */
+      AM33XX_IOPAD(0x858, PIN_OUTPUT | MUX_MODE0) /* (U15) gpmc_a6.gpmc_a6 */
+      AM33XX_IOPAD(0x85c, PIN_OUTPUT | MUX_MODE0) /* (T15) gpmc_a7.gpmc_a7 */
+      AM33XX_IOPAD(0x860, PIN_OUTPUT | MUX_MODE0) /* (V16) gpmc_a8.gpmc_a8 */
+      AM33XX_IOPAD(0x864, PIN_OUTPUT | MUX_MODE0) /* (U16) gpmc_a9.gpmc_a9 */
+      AM33XX_IOPAD(0x83c, PIN_INPUT | MUX_MODE0) /* (U13) gpmc_ad15.gpmc_ad15 */
+      AM33XX_IOPAD(0x838, PIN_INPUT | MUX_MODE0) /* (V13) gpmc_ad14.gpmc_ad14 */
+      AM33XX_IOPAD(0x834, PIN_INPUT | MUX_MODE0) /* (R12) gpmc_ad13.gpmc_ad13 */
+      AM33XX_IOPAD(0x830, PIN_INPUT | MUX_MODE0) /* (T12) gpmc_ad12.gpmc_ad12 */
+      AM33XX_IOPAD(0x82c, PIN_INPUT | MUX_MODE0) /* (U12) gpmc_ad11.gpmc_ad11 */
+      AM33XX_IOPAD(0x828, PIN_INPUT | MUX_MODE0) /* (T11) gpmc_ad10.gpmc_ad10 */
+      AM33XX_IOPAD(0x824, PIN_INPUT | MUX_MODE0) /* (T10) gpmc_ad9.gpmc_ad9 */
+      AM33XX_IOPAD(0x820, PIN_INPUT | MUX_MODE0) /* (U10) gpmc_ad8.gpmc_ad8 */
+      AM33XX_IOPAD(0x890, PIN_OUTPUT | MUX_MODE0) /* (R7) gpmc_advn_ale.gpmc_advn_ale */
+      AM33XX_IOPAD(0x894, PIN_OUTPUT | MUX_MODE0) /* (T7) gpmc_oen_ren.gpmc_oen_ren */
+      AM33XX_IOPAD(0x898, PIN_OUTPUT | MUX_MODE0) /* (U6) gpmc_wen.gpmc_wen */
+      AM33XX_IOPAD(0x87c, PIN_OUTPUT | MUX_MODE0) /* (V6) gpmc_csn0.gpmc_csn0 */
+      AM33XX_IOPAD(0x888, PIN_OUTPUT | MUX_MODE0) /* (T13) gpmc_csn3.gpmc_csn3 */
+      AM33XX_IOPAD(0x878, PIN_OUTPUT | MUX_MODE2) /* (U18) gpmc_be1n.gpmc_csn6 */
+    >;
+  };
+  /* Optional sleep pin settings. Must manually enter values in the below skeleton. */
+  gpmc_to_fpga_pins_sleep: gpmc_to_fpga_pins_sleep {
+    pinctrl-single,pins = <
+      AM33XX_IOPAD(0x844, PIN_OUTPUT_PULLDOWN | MUX_MODE7) /* (V14) gpmc_a1.gpmc_a1 */
+      AM33XX_IOPAD(0x848, PIN_INPUT_PULLDOWN | MUX_MODE7) /* (U14) gpmc_a2.gpmc_a2 */
+      AM33XX_IOPAD(0x84c, PIN_INPUT_PULLDOWN | MUX_MODE7) /* (T14) gpmc_a3.gpmc_a3 */
+      AM33XX_IOPAD(0x858, PIN_INPUT_PULLDOWN | MUX_MODE7) /* (U15) gpmc_a6.gpmc_a6 */
+      AM33XX_IOPAD(0x85c, PIN_INPUT_PULLDOWN | MUX_MODE7) /* (T15) gpmc_a7.gpmc_a7 */
+      AM33XX_IOPAD(0x860, PIN_INPUT_PULLDOWN | MUX_MODE7) /* (V16) gpmc_a8.gpmc_a8 */
+      AM33XX_IOPAD(0x864, PIN_INPUT_PULLDOWN | MUX_MODE7) /* (U16) gpmc_a9.gpmc_a9 */
+      AM33XX_IOPAD(0x83c, PIN_INPUT_PULLDOWN | MUX_MODE7) /* (U13) gpmc_ad15.gpmc_ad15 */
+      AM33XX_IOPAD(0x838, PIN_INPUT_PULLDOWN | MUX_MODE7) /* (V13) gpmc_ad14.gpmc_ad14 */
+      AM33XX_IOPAD(0x834, PIN_INPUT_PULLDOWN | MUX_MODE7) /* (R12) gpmc_ad13.gpmc_ad13 */
+      AM33XX_IOPAD(0x830, PIN_INPUT_PULLDOWN | MUX_MODE7) /* (T12) gpmc_ad12.gpmc_ad12 */
+      AM33XX_IOPAD(0x82c, PIN_INPUT_PULLDOWN | MUX_MODE7) /* (U12) gpmc_ad11.gpmc_ad11 */
+      AM33XX_IOPAD(0x828, PIN_INPUT_PULLDOWN | MUX_MODE7) /* (T11) gpmc_ad10.gpmc_ad10 */
+      AM33XX_IOPAD(0x824, PIN_INPUT_PULLDOWN | MUX_MODE7) /* (T10) gpmc_ad9.gpmc_ad9 */
+      AM33XX_IOPAD(0x820, PIN_INPUT_PULLDOWN | MUX_MODE7) /* (U10) gpmc_ad8.gpmc_ad8 */
+      AM33XX_IOPAD(0x890, PIN_INPUT_PULLDOWN | MUX_MODE7) /* (R7) gpmc_advn_ale.gpmc_advn_ale */
+      AM33XX_IOPAD(0x894, PIN_INPUT_PULLDOWN | MUX_MODE7) /* (T7) gpmc_oen_ren.gpmc_oen_ren */
+      AM33XX_IOPAD(0x898, PIN_INPUT_PULLDOWN | MUX_MODE7) /* (U6) gpmc_wen.gpmc_wen */
+      AM33XX_IOPAD(0x87c, PIN_INPUT_PULLDOWN | MUX_MODE7) /* (V6) gpmc_csn0.gpmc_csn0 */
+      AM33XX_IOPAD(0x888, PIN_INPUT_PULLDOWN | MUX_MODE7) /* (T13) gpmc_csn3.gpmc_csn3 */
+      AM33XX_IOPAD(0x878, PIN_INPUT_PULLDOWN | MUX_MODE7) /* (U18) gpmc_be1n.gpmc_csn6 */
+    >;
+  };
+
+  cpsw_default: cpsw_default {
+    pinctrl-single,pins = <
+      /* Slave 1 */
+      AM33XX_IOPAD(0x90c, PIN_INPUT_PULLUP | MUX_MODE1) /* (H17) mii1_crs.rmii1_crs_dv */
+      AM33XX_IOPAD(0x910, PIN_INPUT_PULLUP | MUX_MODE1) /* (J15) mii1_rxerr.rmii1_rxerr */
+      AM33XX_IOPAD(0x914, PIN_OUTPUT_PULLDOWN | MUX_MODE1)  /* (J16) mii1_txen.rmii1_txen */
+      AM33XX_IOPAD(0x924, PIN_OUTPUT_PULLDOWN | MUX_MODE1)	/* (K16) mii1_txd1.rmii1_txd1 */
+      AM33XX_IOPAD(0x928, PIN_OUTPUT_PULLDOWN | MUX_MODE1)	/* (K17) mii1_txd0.rmii1_txd0 */
+      AM33XX_IOPAD(0x93c, PIN_INPUT_PULLUP | MUX_MODE1) /* (L15) mii1_rxd1.rmii1_rxd1 */
+      AM33XX_IOPAD(0x940, PIN_INPUT_PULLUP | MUX_MODE1) /* (M16) mii1_rxd0.rmii1_rxd0 */
+      AM33XX_IOPAD(0x944, PIN_INPUT_PULLUP | MUX_MODE0) /* (H18) rmii1_ref_clk.rmii1_ref_clk */
+
+      /* Slave 2 */
+      AM33XX_IOPAD(0x870, PIN_INPUT_PULLUP | MUX_MODE3) /* (T17) gpmc_wait0.rmii2_crs_dv */
+      AM33XX_IOPAD(0x874, PIN_INPUT_PULLUP | MUX_MODE3) /* (U17) gpmc_wpn.rmii2_rxerr */
+      AM33XX_IOPAD(0x840, PIN_OUTPUT_PULLDOWN | MUX_MODE3)  /* (R13) gpmc_a0.rmii2_txen */
+      AM33XX_IOPAD(0x850, PIN_OUTPUT_PULLDOWN | MUX_MODE3)  /* (R14) gpmc_a4.rmii2_txd1 */
+      AM33XX_IOPAD(0x854, PIN_OUTPUT_PULLDOWN | MUX_MODE3)  /* (V15) gpmc_a5.rmii2_txd0 */
+      AM33XX_IOPAD(0x868, PIN_INPUT_PULLUP | MUX_MODE3) /* (T16) gpmc_a10.rmii2_rxd1 */
+      AM33XX_IOPAD(0x86c, PIN_INPUT_PULLUP | MUX_MODE3) /* (V17) gpmc_a11.rmii2_rxd0 */
+      AM33XX_IOPAD(0x908, PIN_INPUT_PULLUP | MUX_MODE1) /* (H16) mii1_col.rmii2_ref_clk */
+    >;
+	};
+  cpsw_sleep: cpsw_sleep {
+    pinctrl-single,pins = <
+      /* Slave 1 reset value */
+      AM33XX_IOPAD(0x90c, PIN_INPUT_PULLDOWN | MUX_MODE7) /* (H17) mii1_crs.rmii1_crs_dv */
+      AM33XX_IOPAD(0x910, PIN_INPUT_PULLDOWN | MUX_MODE7)	/* (J15) mii1_rxerr.rmii1_rxerr */
+      AM33XX_IOPAD(0x914, PIN_INPUT_PULLDOWN | MUX_MODE7)	/* (J16) mii1_txen.rmii1_txen */
+      AM33XX_IOPAD(0x924, PIN_INPUT_PULLDOWN | MUX_MODE7)	/* (K16) mii1_txd1.rmii1_txd1 */
+      AM33XX_IOPAD(0x928, PIN_INPUT_PULLDOWN | MUX_MODE7)	/* (K17) mii1_txd0.rmii1_txd0 */
+      AM33XX_IOPAD(0x93c, PIN_INPUT_PULLDOWN | MUX_MODE7)	/* (L15) mii1_rxd1.rmii1_rxd1 */
+      AM33XX_IOPAD(0x940, PIN_INPUT_PULLDOWN | MUX_MODE7)	/* (M16) mii1_rxd0.rmii1_rxd0 */
+      AM33XX_IOPAD(0x944, PIN_INPUT_PULLDOWN | MUX_MODE7) /* (H18) rmii1_ref_clk.rmii1_ref_clk */
+
+      /* Slave 2 reset value */
+      AM33XX_IOPAD(0x870, PIN_INPUT_PULLDOWN | MUX_MODE7) /* (T17) gpmc_wait0.rmii2_crs_dv */
+      AM33XX_IOPAD(0x874, PIN_INPUT_PULLDOWN | MUX_MODE7) /* (U17) gpmc_wpn.rmii2_rxerr */
+      AM33XX_IOPAD(0x840, PIN_INPUT_PULLDOWN | MUX_MODE7) /* (R13) gpmc_a0.rmii2_txen */
+      AM33XX_IOPAD(0x850, PIN_INPUT_PULLDOWN | MUX_MODE7) /* (R14) gpmc_a4.rmii2_txd1 */
+      AM33XX_IOPAD(0x854, PIN_INPUT_PULLDOWN | MUX_MODE7) /* (V15) gpmc_a5.rmii2_txd0 */
+      AM33XX_IOPAD(0x868, PIN_INPUT_PULLDOWN | MUX_MODE7) /* (T16) gpmc_a10.rmii2_rxd1 */
+      AM33XX_IOPAD(0x86c, PIN_INPUT_PULLDOWN | MUX_MODE7) /* (V17) gpmc_a11.rmii2_rxd0 */
+      AM33XX_IOPAD(0x908, PIN_INPUT_PULLDOWN | MUX_MODE7) /* (H16) mii1_col.rmii2_ref_clk */
+    >;
+  };
+
+  davinci_mdio_default: davinci_mdio_default {			/* MDIO */
+    pinctrl-single,pins = <
+      AM33XX_IOPAD(0x948, PIN_INPUT_PULLUP | SLEWCTRL_FAST | MUX_MODE0)  /* (M17) mdio_data.mdio_data */
+      AM33XX_IOPAD(0x94c, PIN_OUTPUT_PULLUP | MUX_MODE0)  /* (M18) mdio_clk.mdio_clk */
+    >;
+  };
+  /* Optional sleep pin settings. Must manually enter values in the below skeleton. */
+  davinci_mdio_sleep: davinci_mdio_sleep {			/* MDIO reset value */
+    pinctrl-single,pins = <
+      AM33XX_IOPAD(0x948, PIN_INPUT_PULLDOWN | MUX_MODE7)  /* (M17) mdio_data.mdio_data */
+      AM33XX_IOPAD(0x94c, PIN_INPUT_PULLDOWN | MUX_MODE7)  /* (M18) mdio_clk.mdio_clk */
+    >;
+  };
+
+  mmc1_pins: pinmux_mmc1_pins {
+    pinctrl-single,pins = <
+      AM33XX_IOPAD(0x8f0, PIN_INPUT_PULLUP | MUX_MODE0)    	/* (F17) mmc0_dat3.mmc0_dat3 */
+      AM33XX_IOPAD(0x8f4, PIN_INPUT_PULLUP | MUX_MODE0)    	/* (F18) mmc0_dat2.mmc0_dat2 */
+      AM33XX_IOPAD(0x8f8, PIN_INPUT_PULLUP | MUX_MODE0)    	/* (G15) mmc0_dat1.mmc0_dat1 */
+      AM33XX_IOPAD(0x8fc, PIN_INPUT_PULLUP | MUX_MODE0)    	/* (G16) mmc0_dat0.mmc0_dat0 */
+      AM33XX_IOPAD(0x900, PIN_INPUT_PULLUP | MUX_MODE0)    	/* (G17) mmc0_clk.mmc0_clk */
+      AM33XX_IOPAD(0x904, PIN_INPUT_PULLUP | MUX_MODE0)	/* (G18) mmc0_cmd.mmc0_cmd */
+      AM33XX_IOPAD(0x960, PIN_INPUT | MUX_MODE5) /* (C15) spi0_cs1.mmc0_sdcd */
+    >;
+  };
+  mmc1_pins_sleep: pinmux_mmc1_pins_sleep {
+    pinctrl-single,pins = <
+      AM33XX_IOPAD(0x8f0, PIN_INPUT_PULLDOWN | MUX_MODE7) /* (F17) mmc0_dat3.mmc0_dat3 */
+      AM33XX_IOPAD(0x8f4, PIN_INPUT_PULLDOWN | MUX_MODE7) /* (F18) mmc0_dat2.mmc0_dat2 */
+      AM33XX_IOPAD(0x8f8, PIN_INPUT_PULLDOWN | MUX_MODE7) /* (G15) mmc0_dat1.mmc0_dat1 */
+      AM33XX_IOPAD(0x8fc, PIN_INPUT_PULLDOWN | MUX_MODE7) /* (G16) mmc0_dat0.mmc0_dat0 */
+      AM33XX_IOPAD(0x900, PIN_INPUT_PULLDOWN | MUX_MODE7) /* (G17) mmc0_clk.mmc0_clk */
+      AM33XX_IOPAD(0x904, PIN_INPUT_PULLDOWN | MUX_MODE7) /* (G18) mmc0_cmd.mmc0_cmd */
+      AM33XX_IOPAD(0x960, PIN_INPUT_PULLDOWN | MUX_MODE7) /* (C15) spi0_cs1.mmc0_sdcd */
+    >;
+  };
+
+	emmc_pins: pinmux_emmc_pins {
+		pinctrl-single,pins = <
+			AM33XX_IOPAD(0x880, PIN_INPUT_PULLUP | MUX_MODE2) 	/* (U9) gpmc_csn1.mmc1_clk */
+			AM33XX_IOPAD(0x884, PIN_INPUT_PULLUP | MUX_MODE2) 	/* (V9) gpmc_csn2.mmc1_cmd */
+			AM33XX_IOPAD(0x800, PIN_INPUT_PULLUP | MUX_MODE1) 	/* (U7) gpmc_ad0.mmc1_dat0 */
+			AM33XX_IOPAD(0x804, PIN_INPUT_PULLUP | MUX_MODE1) 	/* (V7) gpmc_ad1.mmc1_dat1 */
+			AM33XX_IOPAD(0x808, PIN_INPUT_PULLUP | MUX_MODE1) 	/* (R8) gpmc_ad2.mmc1_dat2 */
+			AM33XX_IOPAD(0x80c, PIN_INPUT_PULLUP | MUX_MODE1) 	/* (T8) gpmc_ad3.mmc1_dat3 */
+			AM33XX_IOPAD(0x810, PIN_INPUT_PULLUP | MUX_MODE1) 	/* (U8) gpmc_ad4.mmc1_dat4 */
+			AM33XX_IOPAD(0x814, PIN_INPUT_PULLUP | MUX_MODE1) 	/* (V8) gpmc_ad5.mmc1_dat5 */
+			AM33XX_IOPAD(0x818, PIN_INPUT_PULLUP | MUX_MODE1) 	/* (R9) gpmc_ad6.mmc1_dat6 */
+			AM33XX_IOPAD(0x81c, PIN_INPUT_PULLUP | MUX_MODE1) 	/* (T9) gpmc_ad7.mmc1_dat7 */
+		>;
+	};
+  /* Optional sleep pin settings. Must manually enter values in the below skeleton. */
+  emmcmmc1_pins_sleep: emmcmmc1_pins_sleep {
+    pinctrl-single,pins = <
+      AM33XX_IOPAD(0x80, PIN_INPUT_PULLDOWN | MUX_MODE7) /* (U9) gpmc_csn1.mmc1_clk */
+      AM33XX_IOPAD(0x84, PIN_INPUT_PULLDOWN | MUX_MODE7) /* (V9) gpmc_csn2.mmc1_cmd */
+      AM33XX_IOPAD(0x0, PIN_INPUT_PULLDOWN | MUX_MODE7) /* (U7) gpmc_ad0.mmc1_dat0 */
+      AM33XX_IOPAD(0x4, PIN_INPUT_PULLDOWN | MUX_MODE7) /* (V7) gpmc_ad1.mmc1_dat1 */
+      AM33XX_IOPAD(0x8, PIN_INPUT_PULLDOWN | MUX_MODE7) /* (R8) gpmc_ad2.mmc1_dat2 */
+      AM33XX_IOPAD(0xc, PIN_INPUT_PULLDOWN | MUX_MODE7) /* (T8) gpmc_ad3.mmc1_dat3 */
+      AM33XX_IOPAD(0x10, PIN_INPUT_PULLDOWN | MUX_MODE7) /* (U8) gpmc_ad4.mmc1_dat4 */
+      AM33XX_IOPAD(0x14, PIN_INPUT_PULLDOWN | MUX_MODE7) /* (V8) gpmc_ad5.mmc1_dat5 */
+      AM33XX_IOPAD(0x18, PIN_INPUT_PULLDOWN | MUX_MODE7) /* (R9) gpmc_ad6.mmc1_dat6 */
+      AM33XX_IOPAD(0x1c, PIN_INPUT_PULLDOWN | MUX_MODE7) /* (T9) gpmc_ad7.mmc1_dat7 */
+    >;
+  };
+
+  lcd_pins_default: lcd_pins_default {
+    pinctrl-single,pins = <
+      AM33XX_IOPAD(0x8e0, PIN_OUTPUT_PULLUP | MUX_MODE0) /* (U5) lcd_vsync.lcd_vsync */
+      AM33XX_IOPAD(0x8e4, PIN_OUTPUT_PULLUP | MUX_MODE0) /* (R5) lcd_hsync.lcd_hsync */
+      AM33XX_IOPAD(0x8e8, PIN_OUTPUT_PULLUP | MUX_MODE0) /* (V5) lcd_pclk.lcd_pclk */
+      AM33XX_IOPAD(0x8ec, PIN_OUTPUT_PULLUP | MUX_MODE0) /* (R6) lcd_ac_bias_en.lcd_ac_bias_en */
+      AM33XX_IOPAD(0x8a0, PIN_INPUT_PULLUP | MUX_MODE0) /* (R1) lcd_data0.lcd_data0 */
+      AM33XX_IOPAD(0x8a4, PIN_INPUT_PULLUP | MUX_MODE0) /* (R2) lcd_data1.lcd_data1 */
+      AM33XX_IOPAD(0x8a8, PIN_INPUT_PULLUP | MUX_MODE0) /* (R3) lcd_data2.lcd_data2 */
+      AM33XX_IOPAD(0x8ac, PIN_INPUT_PULLUP | MUX_MODE0) /* (R4) lcd_data3.lcd_data3 */
+      AM33XX_IOPAD(0x8b0, PIN_INPUT_PULLUP | MUX_MODE0) /* (T1) lcd_data4.lcd_data4 */
+      AM33XX_IOPAD(0x8b4, PIN_INPUT_PULLUP | MUX_MODE0) /* (T2) lcd_data5.lcd_data5 */
+      AM33XX_IOPAD(0x8b8, PIN_INPUT_PULLUP | MUX_MODE0) /* (T3) lcd_data6.lcd_data6 */
+      AM33XX_IOPAD(0x8bc, PIN_INPUT_PULLUP | MUX_MODE0) /* (T4) lcd_data7.lcd_data7 */
+      AM33XX_IOPAD(0x8c0, PIN_INPUT_PULLUP | MUX_MODE0) /* (U1) lcd_data8.lcd_data8 */
+      AM33XX_IOPAD(0x8c4, PIN_INPUT_PULLUP | MUX_MODE0) /* (U2) lcd_data9.lcd_data9 */
+      AM33XX_IOPAD(0x8c8, PIN_INPUT_PULLUP | MUX_MODE0) /* (U3) lcd_data10.lcd_data10 */
+      AM33XX_IOPAD(0x8cc, PIN_INPUT_PULLUP | MUX_MODE0) /* (U4) lcd_data11.lcd_data11 */
+      AM33XX_IOPAD(0x8d0, PIN_INPUT_PULLUP | MUX_MODE0) /* (V2) lcd_data12.lcd_data12 */
+      AM33XX_IOPAD(0x8d4, PIN_INPUT_PULLUP | MUX_MODE0) /* (V3) lcd_data13.lcd_data13 */
+      AM33XX_IOPAD(0x8d8, PIN_INPUT_PULLUP | MUX_MODE0) /* (V4) lcd_data14.lcd_data14 */
+      AM33XX_IOPAD(0x8dc, PIN_INPUT_PULLUP | MUX_MODE0) /* (T5) lcd_data15.lcd_data15 */
+      AM33XX_IOPAD(0x88c, PIN_INPUT | MUX_MODE7) /* (V12) gpmc_clk.gpio2[1] lcd_wait*/    >;
+  };
+  /* Optional sleep pin settings. Must manually enter values in the below skeleton. */
+  lcd_pins_sleep: lcd_pins_sleep {
+    pinctrl-single,pins = <
+      AM33XX_IOPAD(0x8e0, PIN_INPUT_PULLDOWN | MUX_MODE7) /* (U5) lcd_vsync.lcd_vsync */
+      AM33XX_IOPAD(0x8e4, PIN_INPUT_PULLDOWN | MUX_MODE7) /* (R5) lcd_hsync.lcd_hsync */
+      AM33XX_IOPAD(0x8e8, PIN_INPUT_PULLDOWN | MUX_MODE7) /* (V5) lcd_pclk.lcd_pclk */
+      AM33XX_IOPAD(0x8ec, PIN_INPUT_PULLDOWN | MUX_MODE7) /* (R6) lcd_ac_bias_en.lcd_ac_bias_en */
+      AM33XX_IOPAD(0x8a0, PIN_INPUT_PULLDOWN | MUX_MODE7) /* (R1) lcd_data0.lcd_data0 */
+      AM33XX_IOPAD(0x8a4, PIN_INPUT_PULLDOWN | MUX_MODE7) /* (R2) lcd_data1.lcd_data1 */
+      AM33XX_IOPAD(0x8a8, PIN_INPUT_PULLDOWN | MUX_MODE7) /* (R3) lcd_data2.lcd_data2 */
+      AM33XX_IOPAD(0x8ac, PIN_INPUT_PULLDOWN | MUX_MODE7) /* (R4) lcd_data3.lcd_data3 */
+      AM33XX_IOPAD(0x8b0, PIN_INPUT_PULLDOWN | MUX_MODE7) /* (T1) lcd_data4.lcd_data4 */
+      AM33XX_IOPAD(0x8b4, PIN_INPUT_PULLDOWN | MUX_MODE7) /* (T2) lcd_data5.lcd_data5 */
+      AM33XX_IOPAD(0x8b8, PIN_INPUT_PULLDOWN | MUX_MODE7) /* (T3) lcd_data6.lcd_data6 */
+      AM33XX_IOPAD(0x8bc, PIN_INPUT_PULLDOWN | MUX_MODE7) /* (T4) lcd_data7.lcd_data7 */
+      AM33XX_IOPAD(0x8c0, PIN_INPUT_PULLDOWN | MUX_MODE7) /* (U1) lcd_data8.lcd_data8 */
+      AM33XX_IOPAD(0x8c4, PIN_INPUT_PULLDOWN | MUX_MODE7) /* (U2) lcd_data9.lcd_data9 */
+      AM33XX_IOPAD(0x8c8, PIN_INPUT_PULLDOWN | MUX_MODE7) /* (U3) lcd_data10.lcd_data10 */
+      AM33XX_IOPAD(0x8cc, PIN_INPUT_PULLDOWN | MUX_MODE7) /* (U4) lcd_data11.lcd_data11 */
+      AM33XX_IOPAD(0x8d0, PIN_INPUT_PULLDOWN | MUX_MODE7) /* (V2) lcd_data12.lcd_data12 */
+      AM33XX_IOPAD(0x8d4, PIN_INPUT_PULLDOWN | MUX_MODE7) /* (V3) lcd_data13.lcd_data13 */
+      AM33XX_IOPAD(0x8d8, PIN_INPUT_PULLDOWN | MUX_MODE7) /* (V4) lcd_data14.lcd_data14 */
+      AM33XX_IOPAD(0x8dc, PIN_INPUT_PULLDOWN | MUX_MODE7) /* (T5) lcd_data15.lcd_data15 */
+      AM33XX_IOPAD(0x88c, PIN_INPUT_PULLDOWN | MUX_MODE7) /* (V12) gpmc_clk.gpio2[1] lcd_wait*/
+    >;
+  };
+
+  spi0_pins: pinmux_spi0_pins {      //to Flash W25
+    pinctrl-single,pins = <
+      AM33XX_IOPAD(0x950, PIN_INPUT | MUX_MODE0) /* (A17) spi0_sclk.spi0_sclk */
+      AM33XX_IOPAD(0x954, PIN_INPUT | MUX_MODE0) /* (B17) spi0_d0.spi0_d0 */
+      AM33XX_IOPAD(0x958, PIN_INPUT | MUX_MODE0) /* (B16) spi0_d1.spi0_d1 */
+      AM33XX_IOPAD(0x95c, PIN_INPUT | MUX_MODE0) /* (A16) spi0_cs0.spi0_cs0 */
+    >;
+  };
+  /* Optional sleep pin settings. Must manually enter values in the below skeleton. */
+  spi0_pins_sleep: spi0_pins_sleep {
+    pinctrl-single,pins = <
+      AM33XX_IOPAD(0x950, PIN_INPUT_PULLDOWN | MUX_MODE7) /* (A17) spi0_sclk.spi0_sclk */
+      AM33XX_IOPAD(0x954, PIN_INPUT_PULLDOWN | MUX_MODE7) /* (B17) spi0_d0.spi0_d0 */
+      AM33XX_IOPAD(0x958, PIN_INPUT_PULLDOWN | MUX_MODE7) /* (B16) spi0_d1.spi0_d1 */
+      AM33XX_IOPAD(0x95c, PIN_INPUT_PULLDOWN | MUX_MODE7) /* (A16) spi0_cs0.spi0_cs0 */
+    >;
+  };
+       
+  dcan0_default: dcan0_default_pins {    // to module
+    pinctrl-single,pins = <
+      AM33XX_IOPAD(0x91c, PIN_OUTPUT_PULLDOWN | MUX_MODE1) /* (J18) gmii1_txd3.dcan0_tx */
+      AM33XX_IOPAD(0x920, PIN_INPUT_PULLUP | MUX_MODE1) /* (K15) gmii1_txd2.dcan0_rx */
+    >;
+  };
+  /* Optional sleep pin settings. Must manually enter values in the below skeleton. */
+  dcan0_sleep: dcan0_sleep {
+    pinctrl-single,pins = <
+      AM33XX_IOPAD(0x91c, PIN_INPUT_PULLDOWN | MUX_MODE7) /* (J18) gmii1_txd3.dcan0_tx */
+      AM33XX_IOPAD(0x920, PIN_INPUT_PULLDOWN | MUX_MODE7) /* (K15) gmii1_txd2.dcan0_rx */
+    >;
+  };      
+
+  dcan1_default: dcan1_default_pins {   //  to host
+    pinctrl-single,pins = <
+      AM33XX_IOPAD(0x96c, PIN_INPUT | MUX_MODE2) /* (E17) uart0_rtsn.dcan1_rx */
+      AM33XX_IOPAD(0x968, PIN_OUTPUT | MUX_MODE2) /* (E18) uart0_ctsn.dcan1_tx */
+    >;
+  };
+  /* Optional sleep pin settings. Must manually enter values in the below skeleton. */
+  dcan1_sleep: dcan1_sleep {
+    pinctrl-single,pins = <
+      AM33XX_IOPAD(0x96c, PIN_INPUT_PULLDOWN | MUX_MODE7) /* (E17) uart0_rtsn.dcan1_rx */
+      AM33XX_IOPAD(0x968, PIN_INPUT_PULLDOWN | MUX_MODE7) /* (E18) uart0_ctsn.dcan1_tx */
+    >;
+  };
+  
+  usb0_pins_default: usb0_pins_default {
+    pinctrl-single,pins = <
+      AM33XX_IOPAD(0xa1c, PIN_OUTPUT | MUX_MODE0) /* (F16) USB0_DRVVBUS.USB0_DRVVBUS */
+    >;
+  };
+  /* Optional sleep pin settings. Must manually enter values in the below skeleton. */
+  usb0_pins_sleep: usb0_pins_sleep {
+    pinctrl-single,pins = <
+      AM33XX_IOPAD(0xa1c, PIN_INPUT_PULLDOWN | MUX_MODE7) /* (F16) USB0_DRVVBUS.USB0_DRVVBUS */
+    >;
+  };
+
+  usb1_pins_default: usb1_pins_default {
+    pinctrl-single,pins = <
+      AM33XX_IOPAD(0xa34, PIN_OUTPUT | MUX_MODE0) /* (F15) USB1_DRVVBUS.USB1_DRVVBUS */
+    >;
+  };
+  /* Optional sleep pin settings. Must manually enter values in the below skeleton. */
+  usb1_pins_sleep: usb1_pins_sleep {
+    pinctrl-single,pins = <
+      AM33XX_IOPAD(0xa34, PIN_INPUT_PULLDOWN | MUX_MODE7) /* (F15) USB1_DRVVBUS.USB1_DRVVBUS */
+    >;
+  };
+
+};
+
+&uart0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&uart0_pins>;
+  pinctrl-1 = <&uart0_pins_sleep>;
+	status = "okay";
+};
+
+&uart1 {
+  pinctrl-names = "default";
+  pinctrl-0 = <&uart1_pins>;
+  pinctrl-1 = <&uart1_pins_sleep>;
+  status = "okay";
+};
+
+&uart2 {
+  pinctrl-names = "default";
+  pinctrl-0 = <&uart2_pins>;
+  pinctrl-1 = <&uart2_pins_sleep>;
+  status = "okay";
+};
+
+&uart3 {
+  pinctrl-names = "default";
+  pinctrl-0 = <&uart3_pins>;
+  pinctrl-1 = <&uart3_pins_sleep>;
+  status = "okay";
+};
+
+&i2c0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&i2c0_pins>;
+	pinctrl-1 = <&i2c0_pins_sleep>;
+	status = "okay";
+	clock-frequency = <100000>;
+
+	tps: tps@24 {
+		reg = <0x24>;
+	};
+
+  s35390a: s35390a@30 {
+    compatible = "s35390a";
+    reg = <0x30>;
+  };
+
+  baseboard_eeprom: baseboard_eeprom@50 {
+    compatible = "at,24c256";
+    reg = <0x50>;
+  };
+
+  cape_eeprom0: cape_eeprom@57 {
+    compatible = "at,24c256";
+    reg = <0x57>;
+  };
+
+	tlv320aic3106: tlv320aic3106@1b {
+		compatible = "ti,tlv320aic3106";
+		reg = <0x1b>;
+		status = "okay";
+	};
+
+};
+
+&i2c2 {	//edt_ft5x06
+  pinctrl-names = "default";
+  pinctrl-0 = <&i2c2_pins>;
+  pinctrl-1 = <&i2c2_pins_sleep>;
+  status = "okay";
+  clock-frequency = <100000>;
+
+  touchscreen: touchscreen@38 {
+  compatible = "edt,edt-ft5406";
+  reg = <0x38>;
+
+  interrupt-parent = <&gpio3 18>;
+  interrupts = <133 IRQ_TYPE_EDGE_FALLING>;
+  };
+
+};
+
+&spi0 {
+  pinctrl-names = "default";
+  pinctrl-0 = <&spi0_pins>;
+  pinctrl-1 = <&spi0_pins_sleep>;
+  status = "okay";
+
+  spidev0: spi@0 {
+    compatible = "spidev";
+    reg = <0>;
+    spi-max-frequency = <20000000>;
+    spi-cpha;
+  };
+
+  spidev2: spi@1 {
+    compatible = "spidev";
+    reg = <1>;
+    spi-max-frequency = <20000000>;
+  };
+
+};
+
+&lcdc {
+  status = "okay";
+
+  /* If you want to get 24 bit RGB and 16 BGR mode instead of
+   * current 16 bit RGB and 24 BGR modes, set the propety
+   * below to "straight".
+  */  
+  /*blue-and-red-wiring = "straight";*/
+	blue-and-red-wiring = "crossed";
+};
+
+&elm {
+        status = "okay";
+};
+
+&epwmss0 {
+  status = "okay";
+
+  ecap0: ecap@48300100 {
+    status = "okay";
+    pinctrl-names = "default";
+    pinctrl-0 = <&ecap0_pins>;
+    pinctrl-1 = <&ecap0_pins_sleep>;
+    };
+};
+
+/include/ "tps65217.dtsi"
+
+&tps {
+        /*
+         * Configure pmic to enter OFF-state instead of SLEEP-state ("RTC-only
+         * mode") at poweroff.  Most BeagleBone versions do not support RTC-only
+         * mode and risk hardware damage if this mode is entered.
+         *
+         * For details, see linux-omap mailing list May 2015 thread
+         *      [PATCH] ARM: dts: am335x-bone* enable pmic-shutdown-controller
+         * In particular, messages:
+         *      http://www.spinics.net/lists/linux-omap/msg118585.html
+         *      http://www.spinics.net/lists/linux-omap/msg118615.html
+         *
+         * You can override this later with
+         *      &tps {  /delete-property/ ti,pmic-shutdown-controller;  }
+         * if you want to use RTC-only mode and made sure you are not affected
+         * by the hardware problems. (Tip: double-check by performing a current
+         * measurement after shutdown: it should be less than 1 mA.)
+         */
+  ti,pmic-shutdown-controller;
+
+  regulators {
+    dcdc1_reg: regulator@0 {
+    regulator-name = "vdds_dpr";
+    regulator-always-on;
+  };
+
+  dcdc2_reg: regulator@1 {
+    /* VDD_MPU voltage limits 0.95V - 1.325V with +/-4% tolerance */
+    regulator-name = "vdd_mpu";
+    regulator-min-microvolt = <925000>;
+    regulator-max-microvolt = <1351500>;
+    regulator-boot-on;
+    regulator-always-on;
+  };
+
+  dcdc3_reg: regulator@2 {
+    /* VDD_CORE voltage limits 0.95V - 1.1V with +/-4% tolerance */
+    regulator-name = "vdd_core";
+    regulator-min-microvolt = <925000>;
+    regulator-max-microvolt = <1150000>;
+    regulator-boot-on;
+    regulator-always-on;
+  };
+
+  ldo1_reg: regulator@3 {
+    regulator-name = "vio,vrtc,vdds";
+    regulator-always-on;
+  };
+
+  ldo2_reg: regulator@4 {
+    regulator-name = "vdd_3v3aux";
+    regulator-always-on;
+  };
+
+  ldo3_reg: regulator@5 {
+    regulator-name = "vdd_1v8";
+    regulator-always-on;
+  };
+
+  ldo4_reg: regulator@6 {
+    regulator-name = "vdd_3v3a";
+    regulator-always-on;
+  };
+};
+
+};
+
+&mac {
+  pinctrl-names = "default", "sleep";
+  pinctrl-0 = <&cpsw_default>;
+  pinctrl-1 = <&cpsw_sleep>;
+  dual_emac = <1>;
+	status = "okay";
+};
+
+&davinci_mdio {
+  pinctrl-names = "default", "sleep";
+  pinctrl-0 = <&davinci_mdio_default>;
+  pinctrl-1 = <&davinci_mdio_sleep>;
+  status = "okay";
+};
+
+&cpsw_emac0 {
+  phy_id = <&davinci_mdio>, <0>;
+  phy-mode = "rmii";
+  dual_emac_res_vlan = <1>;
+};
+
+&cpsw_emac1 {
+  phy_id = <&davinci_mdio>, <1>;
+  phy-mode = "rmii";
+  dual_emac_res_vlan = <2>;
+};
+
+&phy_sel {
+  reg= <0x44e10650 0xf5>;
+  rmii-clock-ext;
+};
+
+&usb {
+  status = "okay";
+};
+
+&usb_ctrl_mod {
+  status = "okay";
+};
+
+&usb0_phy {
+  status = "okay";
+};
+
+&usb1_phy {
+  status = "okay";
+};
+
+&usb0 {
+  status = "okay";
+  dr_mode = "host";
+};
+
+&usb1 {
+  status = "okay";
+  dr_mode = "host";
+};
+
+&cppi41dma  {
+  status = "okay";
+};
+
+&tscadc {
+  status = "disabled";
+  tsc {
+    ti,wires = <4>;
+    ti,x-plate-resistance = <200>;
+    ti,coordinate-readouts = <5>;
+    ti,wire-config = <0x00 0x11 0x22 0x33>;
+    ti,charge-delay = <0x400>;
+  };
+
+  adc {
+    ti,adc-channels = <0 1 2 3>;
+  };
+  
+};
+
+&mmc2 {
+  vmmc-supply = <&vmmcsd_fixed>;
+  pinctrl-names = "default";
+  pinctrl-0 = <&emmc_pins>;
+  bus-width = <8>;
+  status = "okay";
+  ti,non-removable;
+};
+
+
+&mmc1 {
+	vmmc-supply = <&vmmcsd_fixed>;
+	status = "okay";
+	bus-width = <0x4>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&mmc1_pins>;
+  gpios = <&gpio1 19 1>; /* mmc0 power enable*/
+	cd-gpios = <&gpio1 18 GPIO_ACTIVE_HIGH>;
+	wp-gpios = <&gpio1 17 GPIO_ACTIVE_HIGH>;
+	cd-inverted;
+};
+
+&dcan0 {
+  pinctrl-names = "default";
+  pinctrl-0 = <&dcan0_default>;
+  pinctrl-1 = <&dcan0_sleep>;
+  status = "okay";
+};
+
+&dcan1 {
+  pinctrl-names = "default";
+  pinctrl-0 = <&dcan1_default>;
+  pinctrl-1 = <&dcan1_sleep>;
+  status = "okay";
+};
+
+&sham {
+  status = "okay";
+};
+
+&aes {
+  status = "okay";
+};
+
+&gpio0 {
+  ti,no-reset-on-init;
+};
+
+&wkup_m3_ipc {
+  ti,scale-data-fw = "am335x-evm-scale-data.bin";
+};
+
+&rtc {
+  ext-clk-src;
+};

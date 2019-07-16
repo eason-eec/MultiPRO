@@ -1026,7 +1026,8 @@
 		};
 
 		lcdc: lcdc@4830e000 {
-			compatible = "ti,am33xx-tilcdc";
+//			compatible = "ti,am33xx-tilcdc";
+			compatible = "ti,am335x-lcdc";
 			reg = <0x4830e000 0x1000>;
 			interrupt-parent = <&intc>;
 			interrupts = <36>;
