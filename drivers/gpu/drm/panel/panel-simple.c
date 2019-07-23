@@ -1899,6 +1899,34 @@ static const struct panel_desc_dsi panasonic_vvx10f004b00 = {
 	.format = MIPI_DSI_FMT_RGB888,
 	.lanes = 4,
 };
+static const struct drm_display_mode ti_fb_ra8875_mode = {
+	.clock = 20000,
+	.hdisplay = 800,
+	.hsync_start = 800 + 154,
+	.hsync_end = 800 + 154 + 16,
+	.htotal = 800 + 154 + 16 + 32,
+	.vdisplay = 480,
+	.vsync_start = 480 + 17,
+	.vsync_end = 480 + 17 + 2,
+	.vtotal = 480 + 17 + 2 + 16,
+	.vrefresh = 60,
+};
+
+static const struct panel_desc_dsi ti_fb_ra8875 = {
+	.desc = {
+		.modes = &ti_fb_ra8875_mode,
+		.num_modes = 1,
+		.bpc = 16,
+		.size = {
+			.width = 217,
+			.height = 136,
+		},
+	},
+	.flags = MIPI_DSI_MODE_VIDEO | MIPI_DSI_MODE_VIDEO_SYNC_PULSE |
+		 MIPI_DSI_CLOCK_NON_CONTINUOUS,
+	.format = MIPI_DSI_FMT_RGB565,
+	.lanes = 4,
+};
 
 static const struct of_device_id dsi_of_match[] = {
 	{
@@ -1916,6 +1944,9 @@ static const struct of_device_id dsi_of_match[] = {
 	}, {
 		.compatible = "panasonic,vvx10f004b00",
 		.data = &panasonic_vvx10f004b00
+	}, {
+		.compatible = "ti,fb_ra8875",
+		.data = &ti_fb_ra8875,
 	}, {
 		/* sentinel */
 	}
