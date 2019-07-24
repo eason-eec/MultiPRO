@@ -246,7 +246,7 @@ static irqreturn_t edt_ft5x06_ts_isr(int irq, void *dev_id)
 
 		if (!down)
 			continue;
-		printk("%s,0x%2x,%d,%3d,%3d\n", __func__,tsdata->version, id, x, y);
+
 		touchscreen_report_pos(tsdata->input, &tsdata->prop, x, y,
 				       true);
 	}
@@ -892,8 +892,7 @@ static int edt_ft5x06_ts_probe(struct i2c_client *client,
 	int error;
 	char fw_version[EDT_NAME_LEN];
 
-//	dev_dbg(&client->dev, "probing for EDT FT5x06 I2C\n");
-	printk("probing for EDT FT5x06 I2C\n");
+	dev_dbg(&client->dev, "probing for EDT FT5x06 I2C\n");
 
 	tsdata = devm_kzalloc(&client->dev, sizeof(*tsdata), GFP_KERNEL);
 	if (!tsdata) {
@@ -910,7 +909,6 @@ static int edt_ft5x06_ts_probe(struct i2c_client *client,
 	}
 
 	tsdata->max_support_points = chip_data->max_support_points;
-	printk("FT5x06 max support %d points\n",tsdata->max_support_points);
 
 	tsdata->reset_gpio = devm_gpiod_get_optional(&client->dev,
 						     "reset", GPIOD_OUT_HIGH);
@@ -962,9 +960,8 @@ static int edt_ft5x06_ts_probe(struct i2c_client *client,
 	edt_ft5x06_ts_get_defaults(&client->dev, tsdata);
 	edt_ft5x06_ts_get_parameters(tsdata);
 
-//	dev_dbg(&client->dev,
-	printk(
-		"FT5x06 Model \"%s\", Rev. \"%s\", %dx%d sensors\n",
+	dev_dbg(&client->dev,
+		"Model \"%s\", Rev. \"%s\", %dx%d sensors\n",
 		tsdata->name, fw_version, tsdata->num_x, tsdata->num_y);
 
 	input->name = tsdata->name;
@@ -997,8 +994,7 @@ static int edt_ft5x06_ts_probe(struct i2c_client *client,
 					NULL, edt_ft5x06_ts_isr, irq_flags,
 					client->name, tsdata);
 	if (error) {
-//		dev_err(&client->dev, "Unable to request touchscreen IRQ.\n");
-		printk("FT5x06 Unable to request touchscreen IRQ.\n");
+		dev_err(&client->dev, "Unable to request touchscreen IRQ.\n");
 		return error;
 	}
 
@@ -1013,8 +1009,7 @@ static int edt_ft5x06_ts_probe(struct i2c_client *client,
 	edt_ft5x06_ts_prepare_debugfs(tsdata, dev_driver_string(&client->dev));
 	device_init_wakeup(&client->dev, 1);
 
-//	dev_dbg(&client->dev,
-	printk(
+	dev_dbg(&client->dev,
 		"EDT FT5x06 initialized: IRQ %d, WAKE pin %d, Reset pin %d.\n",
 		client->irq,
 		tsdata->wake_gpio ? desc_to_gpio(tsdata->wake_gpio) : -1,

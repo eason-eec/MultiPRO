@@ -396,11 +396,11 @@ static int tilcdc_init(struct drm_driver *ddrv, struct device *dev)
 		goto init_failed;
 	}
 
-//	ret = drm_irq_install(ddev, platform_get_irq(pdev, 0));
-//	if (ret < 0) {
-//		dev_err(dev, "failed to install IRQ handler\n");
-//		goto init_failed;
-//	}
+	ret = drm_irq_install(ddev, platform_get_irq(pdev, 0));
+	if (ret < 0) {
+		dev_err(dev, "failed to install IRQ handler\n");
+		goto init_failed;
+	}
 
 	drm_mode_config_reset(ddev);
 
